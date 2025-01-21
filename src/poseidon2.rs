@@ -1,5 +1,5 @@
 
-//use ark_ff::{Field,PrimeField};
+use ark_ff::prelude::{Zero};
 use ark_bn254::Fr as F;
 
 use crate::constants::*;
@@ -62,10 +62,36 @@ pub fn permute(u: State) -> State {
 
 //------------------------------------------------------------------------------
 
+pub fn compress(x: F, y: F) -> F {
+  let mut u = State { x: x, y: y, z: F::zero() };
+  permute_inplace(&mut u);
+  u.x
+}
+
+pub fn keyed_compress(key: u64, x: F, y: F) -> F {
+  let mut u = State { x: x, y: y, z: F::from(key) };
+  permute_inplace(&mut u);
+  u.x
+}
+
+//------------------------------------------------------------------------------
+
 #[cfg(test)]
 mod tests {
   use super::*;
   use ark_std::str::FromStr;
+
+  //
+  // the known-answer tests are derived from a Haskell reference implementation.
+  //
+  // the implementation USED TO BE compatible with <https://github.com/HorizenLabs/poseidon2>
+  //
+  // UNTIL they replaced the constants for some mysterious reasons in
+  // <https://github.com/HorizenLabs/poseidon2/commit/bb476b9ca38198cf5092487283c8b8c5d4317c4e>
+  //
+  // this other repo: <https://extgit.isec.tugraz.at/krypto/zkfriendlyhashzoo> 
+  // still seems to use the old constants, so we are compatible with that one.
+  //
 
   #[test]
   fn permute_kat() {
@@ -81,4 +107,25 @@ mod tests {
           };
     assert_eq!(output,expected);
   }
+
+  #[test]
+  fn compress_kats() {
+    let output12 = compress( F::from(1u64) , F::from(2u64) );
+    let output34 = compress( F::from(3u64) , F::from(4u64) );
+    assert_eq!( output12 , F::from_str("19016777872907576614311050386253173408873004339574005400462870923562919648648").unwrap() );
+    assert_eq!( output34 , F::from_str("3434170624647484818537756522365043680699152308844695523441164165626957081541") .unwrap() );
+  }
+
+  #[test]
+  fn keyed_compress_kats() {
+    let f101 = F::from(101u64);
+    let f102 = F::from(102u64);
+    let reference_key0 = compress      (     f101, f102);
+    let output_key0    = keyed_compress(0  , f101, f102);
+    let output_key666  = keyed_compress(666, f101, f102);
+    assert_eq!( output_key0   , reference_key0 );
+    assert_eq!( output_key0   , F::from_str("15961426645349780581129468645644877710270210656040701384072931112530046991167").unwrap() );
+    assert_eq!( output_key666 , F::from_str("10054688273989230693209556876964057047824107930668002716115163490706030927433").unwrap() );
+  }
+
 }

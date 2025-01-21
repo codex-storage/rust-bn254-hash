@@ -1,4 +1,14 @@
 
+//
+// Note: this implementation USED TO BE compatible with <https://github.com/HorizenLabs/poseidon2>
+//
+// UNTIL they replaced the constants for some mysterious reasons in
+// <https://github.com/HorizenLabs/poseidon2/commit/bb476b9ca38198cf5092487283c8b8c5d4317c4e>
+//
+// this other repo: <https://extgit.isec.tugraz.at/krypto/zkfriendlyhashzoo> 
+// still seems to use the old constants, so we are compatible with that one.
+//
+
 use lazy_static::lazy_static;
 
 use ark_std::str::FromStr;
