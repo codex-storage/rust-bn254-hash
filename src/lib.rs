@@ -1,2 +1,3 @@
 mod constants;
-pub mod poseidon2;
+pub mod permutation;
+pub mod sponge;
