@@ -1,7 +1,12 @@
 
 -- | The BN254 scalar field
 
+{-# LANGUAGE BangPatterns #-}
 module BN254 where
+
+--------------------------------------------------------------------------------
+
+import Data.Bits
 
 --------------------------------------------------------------------------------
 
@@ -27,5 +32,20 @@ instance Num F where
   (*)    (MkF x) (MkF y) = toF (x*y)
   abs    x = x
   signum _ = toF 1  
+
+square :: F -> F
+square x = x*x
+
+--------------------------------------------------------------------------------
+
+power :: F -> Integer -> F
+power x0 exponent
+  | exponent < 0  = error "power: expecting positive exponent"
+  | otherwise     = go 1 x0 exponent
+  where
+    go !acc _ 0 = acc
+    go !acc s e = go acc' s' (shiftR e 1) where
+      s'   = s*s
+      acc' = if e .&. 1 == 0 then acc else acc*s
 
 --------------------------------------------------------------------------------

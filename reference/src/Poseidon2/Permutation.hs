@@ -1,15 +1,19 @@
 
 
--- | The Poseidon2 permutation
+-- | The Poseidon2 permutation for @t=3@
 
-module Permutation where
+module Poseidon2.Permutation 
+  ( permute
+  ) 
+  where
 
 --------------------------------------------------------------------------------
 
 import Data.Word
 
-import RoundConsts
 import BN254
+
+import Poseidon2.RoundConsts
 
 --------------------------------------------------------------------------------
 
@@ -52,11 +56,11 @@ permute
 
 --------------------------------------------------------------------------------
 
-compress :: (F,F) -> F
-compress (x,y) = fst3 $ permute (x,y,0)
+-- compress :: (F,F) -> F
+-- compress (x,y) = fst3 $ permute (x,y,0)
 
-keyedCompress :: Word -> (F,F) -> F
-keyedCompress key (x,y) = fst3 $ permute (x,y,fromIntegral key)
+-- keyedCompress :: Word -> (F,F) -> F
+-- keyedCompress key (x,y) = fst3 $ permute (x,y,fromIntegral key)
 
 --------------------------------------------------------------------------------
 

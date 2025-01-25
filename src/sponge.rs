@@ -2,14 +2,15 @@
 use ark_ff::{One, Zero};
 use ark_bn254::Fr as F;
 
-use crate::permutation::*;
+use crate::state::*;
+use crate::hash::*;
 use crate::dom_sep::*;
 use crate::words::*;
 
 //------------------------------------------------------------------------------
 
 // hash of field elements with the `10*` padding stategy (rate=2, capacity=1)
-pub fn sponge_felts_pad(xs: Vec<F>) -> F {
+pub fn sponge_felts_pad(hash: Hash, xs: Vec<F>) -> F {
   let l: usize = xs.len();
   let m: usize = l / 2;
   let mut state: State = zero_state();
@@ -17,19 +18,19 @@ pub fn sponge_felts_pad(xs: Vec<F>) -> F {
   for i in 0..m {
     state.x += xs[2*i  ];
     state.y += xs[2*i+1];
-    permute_inplace(&mut state);
+    permute_inplace(hash, &mut state);
   }
   if (l & 1) == 0 {
     // even
     state.x += F::one();
     state.y += F::zero();
-    permute_inplace(&mut state);
+    permute_inplace(hash, &mut state);
   }
   else {
     // odd
     state.x += xs[2*m];
     state.y += F::one();
-    permute_inplace(&mut state);
+    permute_inplace(hash, &mut state);
   }
   state.x  
 }
@@ -37,7 +38,7 @@ pub fn sponge_felts_pad(xs: Vec<F>) -> F {
 //------------------------------------------------------------------------------
 
 // hash of field elements without padding (rate=2, capacity=1)
-pub fn sponge_felts_no_pad(xs: Vec<F>) -> F {
+pub fn sponge_felts_no_pad(hash: Hash, xs: Vec<F>) -> F {
   let l: usize = xs.len();
   assert!( l > 0 , "calling a sponge without padding for an empty input is not allowed");
   let m: usize = l / 2;
@@ -46,7 +47,7 @@ pub fn sponge_felts_no_pad(xs: Vec<F>) -> F {
   for i in 0..m {
     state.x += xs[2*i  ];
     state.y += xs[2*i+1];
-    permute_inplace(&mut state);
+    permute_inplace(hash, &mut state);
   }
   if (l & 1) == 0 {
     // even
@@ -54,7 +55,7 @@ pub fn sponge_felts_no_pad(xs: Vec<F>) -> F {
   else {
     // odd
     state.x += xs[2*m];
-    permute_inplace(&mut state);
+    permute_inplace(hash, &mut state);
   }
   state.x  
 }
@@ -62,7 +63,7 @@ pub fn sponge_felts_no_pad(xs: Vec<F>) -> F {
 //------------------------------------------------------------------------------
 
 // hash of u64 elements with the `10*` padding stategy (rate=2, capacity=1)
-pub fn sponge_u64_pad(input: Vec<u64>) -> F {
+pub fn sponge_u64_pad(hash: Hash, input: Vec<u64>) -> F {
   let l: usize = input.len();
   let m: usize = l / 7;
   let mut state: State = zero_state();
@@ -72,7 +73,7 @@ pub fn sponge_u64_pad(input: Vec<u64>) -> F {
     let (a,b) = u64s_to_felts( input[7*i..7*(i+1)].try_into().unwrap() );
     state.x += a;
     state.y += b;
-    permute_inplace(&mut state);
+    permute_inplace(hash, &mut state);
   }
   
   let r = l - 7*m;
@@ -85,7 +86,7 @@ pub fn sponge_u64_pad(input: Vec<u64>) -> F {
   let (a,b) = u64s_to_felts( ws );
   state.x += a;
   state.y += b;
-  permute_inplace(&mut state);
+  permute_inplace(hash, &mut state);
 
   state.x  
 }
@@ -93,7 +94,7 @@ pub fn sponge_u64_pad(input: Vec<u64>) -> F {
 //------------------------------------------------------------------------------
 
 // hash of u64 elements with no padding (rate=2, capacity=1)
-pub fn sponge_u64_no_pad(input: Vec<u64>) -> F {
+pub fn sponge_u64_no_pad(hash: Hash, input: Vec<u64>) -> F {
   let l: usize = input.len();
   let m: usize = l / 7;
   let mut state: State = zero_state();
@@ -103,7 +104,7 @@ pub fn sponge_u64_no_pad(input: Vec<u64>) -> F {
     let (a,b) = u64s_to_felts( input[7*i..7*(i+1)].try_into().unwrap() );
     state.x += a;
     state.y += b;
-    permute_inplace(&mut state);
+    permute_inplace(hash, &mut state);
   }
   
   let r = l - 7*m;
@@ -115,7 +116,7 @@ pub fn sponge_u64_no_pad(input: Vec<u64>) -> F {
     let (a,b) = u64s_to_felts( ws );
     state.x += a;
     state.y += b;
-    permute_inplace(&mut state);
+    permute_inplace(hash, &mut state);
   }
 
   state.x  
@@ -129,7 +130,7 @@ mod tests {
   use ark_std::str::FromStr;
 
    #[test]
-  fn sponge_felt_pad_kats() {
+  fn poseidon2_sponge_felt_pad_kats() {
     let expected_results_rate2: [F; 9] =
       [ F::from_str("19499082269592267598445447545057958665614609297846978854367973542689225942769").unwrap()
       , F::from_str("18575012789231469229884764324941297325518518125159947154666143736134627612926").unwrap()
@@ -147,13 +148,13 @@ mod tests {
         input.push( F::from( (i+1) as u64 ) ); 
       }
       // println!("{} -> {:?}",n,input);
-      let hash = sponge_felts_pad(input);
+      let hash = sponge_felts_pad(Hash::Poseidon2, input);
       assert_eq!( hash, expected_results_rate2[n] );
     }
   }
 
   #[test]
-  fn sponge_felt_no_pad_kats() {
+  fn poseidon2_sponge_felt_no_pad_kats() {
     let expected_results_rate2: [F; 8] =
       [ F::from_str("1115918818644972208256556451100635122398669465847258748217648737442977805626" ).unwrap()
       , F::from_str("14606415634430706215884818096498881510473181807310833038459556078598593236816").unwrap()
@@ -170,13 +171,13 @@ mod tests {
         input.push( F::from( (i+1) as u64 ) ); 
       }
       // println!("{} -> {:?}",n,input);
-      let hash = sponge_felts_no_pad(input);
+      let hash = sponge_felts_no_pad(Hash::Poseidon2, input);
       assert_eq!( hash, expected_results_rate2[n-1] );
     }
   }
 
   #[test]
-  fn sponge_u64_pad_kats() {
+  fn poseidon2_sponge_u64_pad_kats() {
     let expected_results: [F; 26] =
       [ F::from_str("17514399988141690447675586952929944437374386600212775525745235123193699555032").unwrap()
       , F::from_str("15124300392866129625907254960122795910205844155666063049200988935627203491787").unwrap()
@@ -211,13 +212,13 @@ mod tests {
         input.push( (i+1) as u64 ); 
       }
       // println!("{} -> {:?}",n,input);
-      let hash = sponge_u64_pad(input);
+      let hash = sponge_u64_pad(Hash::Poseidon2, input);
       assert_eq!( hash, expected_results[n] );
     }
   }
 
   #[test]
-  fn sponge_u64_no_pad_kats() {
+  fn poseidon2_sponge_u64_no_pad_kats() {
     let expected_results: [F; 25] =
       [ F::from_str("21622597924725733979495520095566570609749554956201434757717414014785749203159").unwrap()
       , F::from_str("15070262037465553878910423448919356460240312147417573379822098585639266186611").unwrap()
@@ -250,8 +251,8 @@ mod tests {
       for i in 0..n { 
         input.push( (i+1) as u64 ); 
       }
-      println!("{} -> {:?}",n,input);
-      let hash = sponge_u64_no_pad(input);
+      // println!("{} -> {:?}",n,input);
+      let hash = sponge_u64_no_pad(Hash::Poseidon2, input);
       assert_eq!( hash, expected_results[n-1] );
     }
   }

@@ -1,26 +1,11 @@
 
+// the Poseidon2 permutation for `t=3`
+
 use ark_ff::prelude::{Zero};
 use ark_bn254::Fr as F;
 
-use crate::constants::*;
-
-//------------------------------------------------------------------------------
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq)] 
-pub struct State 
-  { pub x: F
-  , pub y: F
-  , pub z: F 
-} 
-
-// cannot be a constant, because stupid rust people...
-pub fn zero_state() -> State {
-  State 
-    { x: F::zero()
-    , y: F::zero()
-    , z: F::zero()
-    }
-}
+use crate::state::*;
+use crate::poseidon2::constants::*;
 
 //------------------------------------------------------------------------------
 
@@ -29,6 +14,8 @@ fn sbox(x: F) -> F {
   let x4: F = x2*x2;
   x*x4
 }
+
+//------------------------------------------------------------------------------
 
 fn linear_layer(u: &mut State) {
   let s = u.x + u.y + u.z;
@@ -110,9 +97,9 @@ mod tests {
   fn permute_kat() {
     let input    = State { x: F::from(0u64), y: F::from(1u64), z: F::from(2u64) };
     let output   = permute(input);
-    println!("x = {}",output.x);
-    println!("y = {}",output.y);
-    println!("z = {}",output.z);
+    // println!("x = {}",output.x);
+    // println!("y = {}",output.y);
+    // println!("z = {}",output.z);
     let expected = State 
           { x: F::from_str("21882471761025344482456282050943515707267606647948403374880378562101343146243").unwrap()
           , y: F::from_str("9030699330013392132529464674294378792132780497765201297316864012141442630280" ).unwrap()

@@ -1,6 +1,6 @@
 
 
-module RoundConsts where
+module Poseidon2.RoundConsts where
 
 --------------------------------------------------------------------------------
 

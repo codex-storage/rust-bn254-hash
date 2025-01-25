@@ -7,7 +7,7 @@ module Sponge where
 import Data.Word
 
 import BN254
-import Permutation
+import Hash
 import U64
 
 --------------------------------------------------------------------------------
@@ -38,14 +38,14 @@ domainSep (Config{..})
 --------------------------------------------------------------------------------
 
 -- | Sponge construction with rate=2 (capacity=1)), and 10* padding
-feltSpongeWithPad :: [F] -> F
-feltSpongeWithPad input = go (0,0,civ) (felts_pad_10star input) where
+feltSpongeWithPad :: Hash -> [F] -> F
+feltSpongeWithPad hash input = go (0,0,civ) (felts_pad_10star input) where
   -- domain separation capacity IV
   civ = domainSep $ Config { rate = 2 , width = 3 , nbits = 254 , padding = 1 , mblen = Nothing }
 
   go (sx,_ ,_ ) []         = sx
   go (sx,sy,sz) (a:b:rest) = go state' rest where 
-    state' = permute (sx+a, sy+b, sz)
+    state' = permute hash (sx+a, sy+b, sz)
 
   felts_pad_10star :: [F] -> [F]
   felts_pad_10star = go where
@@ -56,8 +56,8 @@ feltSpongeWithPad input = go (0,0,civ) (felts_pad_10star input) where
 --------------------------------------------------------------------------------
 
 -- | Sponge construction with rate=2 (capacity=1), and no padding
-feltSpongeWithNoPad :: [F] -> F
-feltSpongeWithNoPad input
+feltSpongeWithNoPad :: Hash -> [F] -> F
+feltSpongeWithNoPad hash input
   | null input  = error "the combination of empty input and no padding is not allowed!"
   | otherwise   = fst3 $ go (0,0,civ) input where
 
@@ -66,22 +66,22 @@ feltSpongeWithNoPad input
 
   add (x,y) (sx,sy,sz) = (sx+x, sy+y, sz)
 
-  go state []         =                         state
-  go state [a]        =     permute $ add (a,0) state
-  go state (a:b:rest) = go (permute $ add (a,b) state) rest
+  go state []         =                              state
+  go state [a]        =     permute hash $ add (a,0) state
+  go state (a:b:rest) = go (permute hash $ add (a,b) state) rest
 
 --------------------------------------------------------------------------------
 
 -- | Sponge construction for 64 bit words with rate=2 (capacity=1), and 10* padding
-u64SpongeWithPad :: [Word64] -> F
-u64SpongeWithPad input = go (0,0,civ) (chunk_pad_10star input) where
+u64SpongeWithPad :: Hash -> [Word64] -> F
+u64SpongeWithPad hash input = go (0,0,civ) (chunk_pad_10star input) where
   -- domain separation capacity IV
   civ = domainSep $ Config { rate = 2 , width = 3 , nbits = 64 , padding = 1 , mblen = Nothing }
 
   go (sx,_ ,_ ) []          = sx
   go (sx,sy,sz) (this:rest) = go state' rest where 
     (a,b)  = u64sToFelts this
-    state' = permute (sx+a, sy+b, sz)
+    state' = permute hash (sx+a, sy+b, sz)
 
   chunk_pad_10star :: [Word64] -> [[Word64]]
   chunk_pad_10star = go where
@@ -93,8 +93,8 @@ u64SpongeWithPad input = go (0,0,civ) (chunk_pad_10star input) where
 --------------------------------------------------------------------------------
 
 -- | Sponge construction for 64 bit words with rate=2 (capacity=1), no padding
-u64SpongeWithNoPad :: [Word64] -> F
-u64SpongeWithNoPad input 
+u64SpongeWithNoPad :: Hash -> [Word64] -> F
+u64SpongeWithNoPad hash input 
   | null input  = error "the combination of empty input and no padding is not allowed!"
   | otherwise   = go (0,0,civ) (chunk_nopad input) 
   where
@@ -104,7 +104,7 @@ u64SpongeWithNoPad input
     go (sx,_ ,_ ) []          = sx
     go (sx,sy,sz) (this:rest) = go state' rest where 
       (a,b)  = u64sToFelts this
-      state' = permute (sx+a, sy+b, sz)
+      state' = permute hash (sx+a, sy+b, sz)
 
 chunk_nopad :: [Word64] -> [[Word64]]
 chunk_nopad = go where

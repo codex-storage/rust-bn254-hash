@@ -38,7 +38,7 @@ pub fn domain_separator(rate: usize, state_size: usize, input_bits: usize, paddi
       F::from(high + low)
     }
   };
-  println!("domsep = {:?}", domsep );
+  // println!("domsep = {:?}", domsep );
   domsep
 }
 
