@@ -3,7 +3,7 @@ use ark_ff::prelude::{Zero};
 use ark_bn254::Fr as F;
 
 use crate::state::*;
-use crate::poseidon2;
+use crate::{poseidon2, skyscraper};
 use crate::griffin;
 
 //------------------------------------------------------------------------------

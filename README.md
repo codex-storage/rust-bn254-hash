@@ -9,6 +9,7 @@ Hash functions implemented:
 
 - [x] Poseidon2
 - [x] Griffin
+- [x] skyscraper
 
 We plan to integrate this into Plonky2, to allow an efficient BN254 recursive wrapper.
 For this we need some custom features: For example when computing the Fiat-Shamir
