@@ -1,7 +1,9 @@
 use ark_bn254::{Fr as F};
 use ark_ff::{BigInteger256, Field, One, PrimeField};
 use core::str::FromStr;
+use std::os::macos::raw::stat;
 use crate::skyscraper::constants::{FunctionBlock, RF1, RC, RC_RAW};
+use crate::state::State;
 
 pub fn bars_inplace_mont(x: &mut F) {
     // x → two 128‐bit chunks.
@@ -118,6 +120,21 @@ pub fn permute(input: [F; 2]) -> [F; 2] {
     current_state
 }
 
+/// WARNING: this ignores the z element of the state
+/// TODO: extension field
+pub fn permute_state_inplace(u: &mut State) {
+    let ns = permute([u.x,u.y]);
+    u.x = ns[0];
+    u.y = ns[1];
+}
+
+/// WARNING: this ignores the z element of the state
+/// TODO: extension field
+pub fn permute_state(mut u: State) -> State{
+    permute_state_inplace(&mut u);
+    u
+}
+
 pub fn compress(x: F, y: F) -> F {
     let p_out = permute([x, y]);
     let out = x + p_out[0];
@@ -129,7 +146,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_k_permutation() {
+    fn test_permutation() {
         let init = [F::from(1234u64), F::from(5678u64)];
         let init_mont = [F::new_unchecked(init[0].into_bigint()), F::new_unchecked(init[1].into_bigint())];
         let out = permute(init_mont);

@@ -27,8 +27,10 @@ Single core, unoptimized, MacBook Pro M2.
 
 - 1000 Poseidon2 permutations: 5.24 msec (approx 12MB/sec linear hashing)
 - 1000 Griffin permutations: 76.8 msec  (appox 800k/sec linear hashing)
+- 1000 Skyscraper permutations: 207.45 µs (width=2)
 
 10000 permutations:
 
 - 10000 Poseidon2 permutations: 53 msec
-- 10000 Griffin permutations: 762 sec
+- 10000 Griffin permutations: 762 msec
+- 10000 Skyscraper permutations: 2.2 msec (width=2)
