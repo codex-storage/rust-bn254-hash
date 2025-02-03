@@ -7,6 +7,8 @@ module BN254 where
 --------------------------------------------------------------------------------
 
 import Data.Bits
+import Data.Ratio
+import Text.Printf
 
 --------------------------------------------------------------------------------
 
@@ -47,5 +49,56 @@ power x0 exponent
     go !acc s e = go acc' s' (shiftR e 1) where
       s'   = s*s
       acc' = if e .&. 1 == 0 then acc else acc*s
+
+invNaive :: F -> F
+invNaive x = power x (fieldPrime - 2)
+
+inv = invNaive
+
+--------------------------------------------------------------------------------
+
+instance Fractional F where
+  fromRational q = fromInteger (numerator q) / fromInteger (denominator q)
+  recip   = inv
+  (/) x y = x * inv y
+
+--------------------------------------------------------------------------------
+
+newtype Mont 
+  = MkMont F 
+  deriving (Eq,Show)
+
+montMultiplier :: F
+montMultiplier = toF (2^256)
+
+invMontMultiplier :: F
+invMontMultiplier = inv montMultiplier
+
+toMont :: F -> Mont
+toMont x = MkMont (x * montMultiplier)
+
+fromMont :: Mont -> F
+fromMont (MkMont y) = (y * invMontMultiplier)
+
+instance Num Mont where
+  fromInteger = toMont . toF . fromInteger
+  negate (MkMont x)            = MkMont (negate x)
+  (+)    (MkMont x) (MkMont y) = MkMont (x+y)
+  (-)    (MkMont x) (MkMont y) = MkMont (x-y)
+  (*)    (MkMont x) (MkMont y) = MkMont (x*y*invMontMultiplier)
+  abs    x = x
+  signum _ = MkMont montMultiplier  
+
+--------------------------------------------------------------------------------
+
+class ShowHex a where
+  showHex  :: a -> String
+
+printHex :: ShowHex a => a -> IO ()
+printHex x = putStrLn (showHex x)
+
+instance ShowHex Integer where showHex = printf "0x%x"
+instance ShowHex F       where showHex (MkF x) = showHex x
+instance ShowHex Mont    where showHex (MkMont y) = showHex y
 
 --------------------------------------------------------------------------------
