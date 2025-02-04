@@ -1,8 +1,9 @@
 
-Reference implementation in Haskell
------------------------------------
+Reference implementations in Haskell
+------------------------------------
 
-This is for generating test vectors.
+This for having a clear specification and also for generating test vectors.
 
-- [x] Poseidon2
-- [x] Griffin
+- [x] Poseidon2 (t=3)
+- [x] Griffin (t=3)
+- [x] Skyscraper (t=2,4,6)
