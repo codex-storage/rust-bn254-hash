@@ -24,7 +24,7 @@ fn bench_iterated_perm(c: &mut Criterion , h: Hash, n: usize) {
 fn bench_permutations(c: &mut Criterion) {
   bench_iterated_perm(c, Hash::Poseidon2, 10000);
   bench_iterated_perm(c, Hash::Griffin  , 10000);
-  bench_iterated_perm(c, Hash::Skyscraper  , 10000);
+  // bench_iterated_perm(c, Hash::Skyscraper  , 10000);
 }
 
 //------------------------------------------------------------------------------

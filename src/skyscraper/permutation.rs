@@ -122,7 +122,7 @@ pub fn permute(input: [F; 2]) -> [F; 2] {
 
 /// WARNING: this ignores the z element of the state
 /// TODO: extension field
-pub fn permute_state_inplace(u: &mut State) {
+pub(crate) fn permute_state_inplace(u: &mut State) {
     let ns = permute([u.x,u.y]);
     u.x = ns[0];
     u.y = ns[1];
@@ -130,7 +130,7 @@ pub fn permute_state_inplace(u: &mut State) {
 
 /// WARNING: this ignores the z element of the state
 /// TODO: extension field
-pub fn permute_state(mut u: State) -> State{
+pub(crate) fn permute_state(mut u: State) -> State{
     permute_state_inplace(&mut u);
     u
 }

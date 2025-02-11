@@ -12,7 +12,7 @@ use crate::griffin;
 pub enum Hash {
   Poseidon2,
   Griffin,
-  Skyscraper
+  // Skyscraper
 }
 
 //------------------------------------------------------------------------------
@@ -21,7 +21,7 @@ pub fn permute(h: Hash, s: State) -> State {
   match h {
     Hash::Poseidon2 => poseidon2::permutation::permute(s),
     Hash::Griffin   =>   griffin::permutation::permute(s),
-    Hash::Skyscraper   =>   skyscraper::permutation::permute_state(s),
+    // Hash::Skyscraper   =>   skyscraper::permutation::permute_state(s),
   }
 }
 
@@ -29,7 +29,7 @@ pub fn permute_inplace(h: Hash, s: &mut State){
   match h {
     Hash::Poseidon2 => poseidon2::permutation::permute_inplace(s),
     Hash::Griffin   =>   griffin::permutation::permute_inplace(s),
-    Hash::Skyscraper   =>   skyscraper::permutation::permute_state_inplace(s),
+    // Hash::Skyscraper   =>   skyscraper::permutation::permute_state_inplace(s),
   };
 }
 
