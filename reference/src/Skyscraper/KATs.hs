@@ -4,26 +4,30 @@
 -- <https://extgit.isec.tugraz.at/krypto/zkfriendlyhashzoo>
 --
 
+{-# LANGUAGE TypeApplications, DataKinds #-}
 module Skyscraper.KATs where
 
 --------------------------------------------------------------------------------
 
+import Data.Proxy
+
 import BN254
+import Skyscraper.FieldExt
 import Skyscraper.Permutation
 
 --------------------------------------------------------------------------------
 
 testSkyscraperKATs :: [Bool]
 testSkyscraperKATs = [ok1,ok2,ok3] where
-  ok1 = (perm1 input1 == output1)
-  ok2 = (perm2 input2 == output2)
-  ok3 = (perm3 input3 == output3)
+  ok1 = (permute (Proxy @Sky2) input1 == output1)
+  ok2 = (permute (Proxy @Sky4) input2 == output2)
+  ok3 = (permute (Proxy @Sky6) input3 == output3)
 
 --------------------------------------------------------------------------------
 
 -- Note: the official implementation stores the field extension vector in the "wrong" order
-mkExt2   (b,a) = MkExt2 a b
-mkExt3 (c,b,a) = MkExt3 a b c
+revMkExt2   (b,a) = MkExt2 a b
+revMkExt3 (c,b,a) = MkExt3 a b c
 
 input1 :: (F,F)
 input1 = 
@@ -39,26 +43,26 @@ output1 =
 
 input2 :: (F2,F2)
 input2 =
-  ( mkExt2 (0x0004d2 , 0x00029a)
-  , mkExt2 (0x000162e, 0x000309)
+  ( revMkExt2 (0x0004d2 , 0x00029a)
+  , revMkExt2 (0x000162e, 0x000309)
   )
 
 output2 :: (F2,F2)
 output2 =
-  ( mkExt2 ( 0x2456fa7300e7899364d1b7b933ee989a11606ad64b3166bb6e2822d46b2979db, 0x151084b3967b629e9103c5b85cf76bf47557d71a492e9575eb0dc2ac7bac0af3 )
-  , mkExt2 ( 0x1f7964c2b3b354824906659089ac272aaa84cb50214c200bcf674d677cc83ee2, 0x29c9023fff7db7812cde8269233632415bb56ea4c8644c1edcfdbde68cc29dfe )
+  ( revMkExt2 ( 0x2456fa7300e7899364d1b7b933ee989a11606ad64b3166bb6e2822d46b2979db, 0x151084b3967b629e9103c5b85cf76bf47557d71a492e9575eb0dc2ac7bac0af3 )
+  , revMkExt2 ( 0x1f7964c2b3b354824906659089ac272aaa84cb50214c200bcf674d677cc83ee2, 0x29c9023fff7db7812cde8269233632415bb56ea4c8644c1edcfdbde68cc29dfe )
   )
 
 input3 :: (F3,F3)
 input3 = 
-  ( mkExt3 (0x0004d2 , 0x00029a, 0x0003e9 ) 
-  , mkExt3 (0x000162e, 0x000309, 0x0007d2 ) 
+  ( revMkExt3 (0x0004d2 , 0x00029a, 0x0003e9 ) 
+  , revMkExt3 (0x000162e, 0x000309, 0x0007d2 ) 
   )
 
 output3 :: (F3,F3)
 output3 = 
-  ( mkExt3 ( 0x2ca9324e4d13668786f9f2dadf2ac3baf75f4bd57e14150c3421061d377edb6f, 0x2b87210ee7202515405c813b366da0b944c393e13332fd746ac19629c3b86486, 0x1bf5b2a7bed61ddd44f1d5a01492f203bdfd4973d68f3d91dddfdb8bc5b2db70 ) 
-  , mkExt3 ( 0x9896a6aa7e71659af7c11a42e6c95a361225befaf1613e7253c5224165ecaf5 , 0x1f40923d58dbe5ee7b9bd58ff493cd5141b0fd75da57434c41aeb3ddfcbe3c37, 0x26afdb536cae8d809d0609a51c463d80198d2530e32053c5e888301953dfe670 )
+  ( revMkExt3 ( 0x2ca9324e4d13668786f9f2dadf2ac3baf75f4bd57e14150c3421061d377edb6f, 0x2b87210ee7202515405c813b366da0b944c393e13332fd746ac19629c3b86486, 0x1bf5b2a7bed61ddd44f1d5a01492f203bdfd4973d68f3d91dddfdb8bc5b2db70 ) 
+  , revMkExt3 ( 0x9896a6aa7e71659af7c11a42e6c95a361225befaf1613e7253c5224165ecaf5 , 0x1f40923d58dbe5ee7b9bd58ff493cd5141b0fd75da57434c41aeb3ddfcbe3c37, 0x26afdb536cae8d809d0609a51c463d80198d2530e32053c5e888301953dfe670 )
   )
 
 --------------------------------------------------------------------------------
